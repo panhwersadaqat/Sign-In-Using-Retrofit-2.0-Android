@@ -1,0 +1,38 @@
+    private fun signInMethod() {
+        val username = nameEditText!!.getText().toString()
+        val password = passwordEditText!!.getText().toString()
+
+        val loginRequest = LoginRequest()
+        loginRequest.userName = username
+        loginRequest.Password = password
+
+        val call = RetrofitClient
+            .getInstance().getApi().loginUser(loginRequest)
+
+
+        call.enqueue(object : Callback<LogInResponse> {
+            override fun onResponse(call: Call<LogInResponse>, response: Response<LogInResponse>) {
+                if (response.body()!!.response_code.equals("200")) {
+                    SharedPrefManager.getInstance(this@SignIn).saveUser(response.body()!!.user)
+                    progressDoalog!!.dismiss()
+                    val intent = Intent(this@SignIn, MainActivityCity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+
+                } else {
+                    progressDoalog!!.dismiss()
+                    Toast.makeText(
+                        this@SignIn,
+                        "Wrong Username or Password",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+
+            override fun onFailure(call: Call<LogInResponse>, t: Throwable) {
+                progressDoalog!!.dismiss()
+                Toast.makeText(this@SignIn, "" + t, Toast.LENGTH_LONG).show()
+
+            }
+        })
+    }
